@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roami AI - Your Intelligent Travel Companion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        roami: {
+                            dark: '#1B4332',
+                            primary: '#2D5A4A',
+                            sage: '#A4B5A0',
+                            accent: '#4ECDC4',
+                            light: '#F7F8F0',
+                            cream: '#FEFDF5',
+                            business: {
+                                dark: '#0f172a',
+                                primary: '#1e3a8a',
+                                accent: '#3b82f6',
+                                light: '#f8fafc'
+                            }
+                        }
+                    },
+                    fontFamily: {
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+                        body: ['Inter', 'sans-serif']
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                        'fade-in': 'fadeIn 0.4s ease-out',
+                        'bounce-soft': 'bounceSoft 2s infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-15px)' },
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        bounceSoft: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-5px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --primary: #2D5A4A;
+            --accent: #4ECDC4;
+            --bg: #F7F8F0;
+            --text: #1B4332;
+            --gradient-start: #2D5A4A;
+            --gradient-end: #4ECDC4;
+        }
+        
+        .business-mode {
+            --primary: #1e3a8a;
+            --accent: #3b82f6;
+            --bg: #f8fafc;
+            --text: #0f172a;
+            --gradient-start: #1e3a8a;
+            --gradient-end: #3b82f6;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            transition: all 0.5s ease;
+        }
+        
+        .roami-gradient {
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+        }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .business-mode .glass-panel {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        
+        .chat-bubble {
+            position: relative;
+            max-width: 80%;
+            padding: 1rem 1.25rem;
+            border-radius: 1.5rem;
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        .chat-bubble.user {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            border-bottom-right-radius: 0.25rem;
+            margin-left: auto;
+        }
+        
+        .chat-bubble.ai {
+            background: white;
+            color: var(--text);
+            border-bottom-left-radius: 0.25rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .business-mode .chat-bubble.ai {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .mode-toggle {
+            position: relative;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 9999px;
+            padding: 0.25rem;
+            display: flex;
+            gap: 0.25rem;
+        }
+        
+        .mode-option {
+            position: relative;
+            z-index: 1;
+            padding: 0.5rem 1.25rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .mode-option.active {
+            color: white;
+        }
+        
+        .mode-option:not(.active) {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .mode-option:not(.active):hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .mode-slider {
+            position: absolute;
+            top: 0.25rem;
+            left: 0.25rem;
+            height: calc(100% - 0.5rem);
+            border-radius: 9999px;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 0;
+        }
+        
+        .typing-indicator span {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background: currentColor;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: typing 1.4s infinite ease-in-out both;
+        }
+        
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        
+        .itinerary-card {
+            transition: all 0.3s ease;
+        }
+        
+        .itinerary-card:hover {
+            transform: translateX(4px);
+        }
+        
+        .suggestion-chip {
+            transition: all 0.2s ease;
+        }
+        
+        .suggestion-chip:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .wave-bg {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 200px;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23ffffff' fill-opacity='0.1' d='M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            background-size: cover;
+        }
+        
+        .feature-icon {
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover .feature-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+        
+        .scroll-hidden::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .scroll-hidden {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        .business-mode .chat-bubble.user {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+        }
+    </style>
+</head>
+<body class="antialiased overflow-x-hidden" id="app">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl roami-gradient flex items-center justify-center text-white shadow-lg">
+                        <i data-lucide="compass" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <span class="font-display font-bold text-2xl tracking-tight" style="color: var(--text);">Roami</span>
+                        <span class="text-xs font-medium ml-1 px-2 py-0.5 rounded-full bg-white/20 text-white/80">AI</span>
+                    </div>
+                </div>
+                
+                <div class="hidden md:flex items-center gap-8">
+                    <a href="#" class="text-sm font-medium hover:opacity-70 transition-opacity" style="color: var(--text);">How it Works</a>
+                    <a href="#" class="text-sm font-medium hover:opacity-70 transition-opacity" style="color: var(--text);">Features</a>
+                    <a href="#" class="text-sm font-medium hover:opacity-70 transition-opacity" style="color: var(--text);">For Business</a>
+                    <a href="#" class="text-sm font-medium hover:opacity-70 transition-opacity" style="color: var(--text);">Pricing</a>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <a href="roamiai_booking.html" 
+                        class="px-5 py-2.5 rounded-full text-sm font-semibold roami-gradient text-white shadow-lg hover:shadow-xl transition-all hover:scale-105 inline-block">
+                         Start Planning
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section - AI Assistant Interface -->
+    <section class="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden" style="background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);">
+        <div class="absolute inset-0 opacity-20">
+            <div class="absolute top-20 left-10 w-72 h-72 bg-white rounded-full blur-3xl animate-float"></div>
+            <div class="absolute bottom-20 right-10 w-96 h-96 bg-white rounded-full blur-3xl animate-float" style="animation-delay: 2s;"></div>
+        </div>
+        
+        <div class="wave-bg"></div>
+        
+        <div class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <!-- Left: Value Proposition -->
+                <div class="text-white space-y-8">
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20">
+                        <span class="flex h-2 w-2 rounded-full bg-white animate-pulse"></span>
+                        <span class="text-sm font-medium">AI Travel Assistant v2.0</span>
+                    </div>
+                    
+                    <h1 class="font-display text-5xl md:text-6xl lg:text-7xl font-bold leading-tight">
+                        Meet your<br>
+                        <span class="text-white/90">travel companion</span>
+                    </h1>
+                    
+                    <p class="text-xl text-white/80 max-w-lg leading-relaxed">
+                        Roami AI plans, books, and manages your entire journey. Just tell us where you want to go—or let us surprise you.
+                    </p>
+                    
+                    <!-- Mode Toggle -->
+                    <div class="inline-block">
+                        <div class="mode-toggle" id="mode-toggle">
+                            <div class="mode-slider" id="mode-slider" style="width: 50%;"></div>
+                            <div class="mode-option active" id="mode-leisure" onclick="setMode('leisure')">
+                                <i data-lucide="palmtree" class="w-4 h-4"></i>
+                                Leisure
+                            </div>
+                            <div class="mode-option" id="mode-business" onclick="setMode('business')">
+                                <i data-lucide="briefcase" class="w-4 h-4"></i>
+                                Business
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-6 text-sm text-white/70">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="check-circle" class="w-4 h-4"></i>
+                            <span>Free to use</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="check-circle" class="w-4 h-4"></i>
+                            <span>No booking fees</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="check-circle" class="w-4 h-4"></i>
+                            <span>24/7 AI support</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right: AI Chat Interface -->
+                <div class="relative">
+                    <div class="glass-panel rounded-3xl p-6 shadow-2xl max-w-md mx-auto lg:mx-0 lg:ml-auto">
+                        <!-- Chat Header -->
+                        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200/50">
+                            <div class="w-12 h-12 rounded-full roami-gradient flex items-center justify-center text-white shadow-lg">
+                                <i data-lucide="bot" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <div class="font-display font-bold text-lg" style="color: var(--text);">Roami Assistant</div>
+                                <div class="flex items-center gap-1.5 text-xs" style="color: var(--primary);">
+                                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                                    <span class="font-medium">Online now</span>
+                                </div>
+                            </div>
+                            <button class="ml-auto p-2 rounded-full hover:bg-gray-100 transition-colors">
+                                <i data-lucide="more-vertical" class="w-5 h-5 text-gray-400"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Chat Messages -->
+                        <div class="space-y-4 mb-6 h-64 overflow-y-auto scroll-hidden" id="chat-container">
+                            <div class="chat-bubble ai">
+                                <p class="text-sm leading-relaxed">Hi there! 👋 I'm Roami, your AI travel assistant. I can help you plan trips, find deals, manage itineraries, and even handle unexpected changes.</p>
+                            </div>
+                            
+                            <div class="chat-bubble ai">
+                                <p class="text-sm leading-relaxed mb-3">What brings you here today?</p>
+                                <div class="flex flex-wrap gap-2">
+                                    <button onclick="sendQuickMessage('Plan a weekend getaway')" class="suggestion-chip px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-xs font-medium transition-colors" style="color: var(--text);">
+                                        Plan a weekend getaway
+                                    </button>
+                                    <button onclick="sendQuickMessage('Find business hotels')" class="suggestion-chip px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-xs font-medium transition-colors" style="color: var(--text);">
+                                        Find business hotels
+                                    </button>
+                                    <button onclick="sendQuickMessage('Manage my booking')" class="suggestion-chip px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-xs font-medium transition-colors" style="color: var(--text);">
+                                        Manage my booking
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Chat Input -->
+                        <div class="relative">
+                            <input type="text" id="chat-input" placeholder="Ask Roami anything..." 
+                                   class="w-full pl-4 pr-12 py-4 rounded-2xl bg-gray-100 border-0 text-sm focus:ring-2 focus:ring-[var(--accent)]/50 outline-none transition-all"
+                                   style="color: var(--text);"
+                                   onkeypress="handleChatKeypress(event)">
+                            <button onclick="sendMessage()" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full roami-gradient flex items-center justify-center text-white hover:scale-110 transition-transform">
+                                <i data-lucide="arrow-up" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="mt-4 flex items-center justify-center gap-4 text-xs text-gray-400">
+                            <span class="flex items-center gap-1">
+                                <i data-lucide="shield-check" class="w-3 h-3"></i>
+                                Secure
+                            </span>
+                            <span class="flex items-center gap-1">
+                                <i data-lucide="zap" class="w-3 h-3"></i>
+                                Instant
+                            </span>
+                            <span class="flex items-center gap-1">
+                                <i data-lucide="heart" class="w-3 h-3"></i>
+                                Personal
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Floating Elements -->
+                    <div class="absolute -top-6 -right-6 w-20 h-20 bg-white rounded-2xl shadow-xl flex items-center justify-center animate-bounce-soft">
+                        <div class="text-center">
+                            <i data-lucide="plane" class="w-8 h-8 mx-auto mb-1" style="color: var(--primary);"></i>
+                            <span class="text-[10px] font-bold text-gray-600">2 min ago</span>
+                        </div>
+                    </div>
+                    
+                    <div class="absolute -bottom-4 -left-4 glass-panel rounded-xl p-3 shadow-lg animate-float" style="animation-delay: 1s;">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                                <i data-lucide="check" class="w-4 h-4 text-green-600"></i>
+                            </div>
+                            <div class="text-xs">
+                                <div class="font-semibold" style="color: var(--text);">Flight booked</div>
+                                <div class="text-gray-500">SIN → NRT</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Live Itinerary Preview Section -->
+    <section class="py-24 relative" style="background-color: var(--bg);">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-sm text-sm font-semibold mb-4" style="color: var(--primary);">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    Smart Itinerary Management
+                </span>
+                <h2 class="font-display text-4xl md:text-5xl font-bold mb-4" style="color: var(--text);">
+                    Your trip, organized automatically
+                </h2>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                    Roami builds your complete itinerary from scattered bookings, suggests optimizations, and keeps everything in one place.
+                </p>
+            </div>
+            
+            <div class="grid lg:grid-cols-3 gap-8">
+                <!-- Sample Itinerary Card -->
+                <div class="lg:col-span-2 glass-panel rounded-3xl p-8 shadow-xl">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h3 class="font-display text-2xl font-bold" style="color: var(--text);">Tokyo Adventure</h3>
+                            <p class="text-sm text-gray-500 mt-1">Mar 15 - Mar 20 • 6 days</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+                                <i data-lucide="share-2" class="w-5 h-5 text-gray-400"></i>
+                            </button>
+                            <button class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+                                <i data-lucide="download" class="w-5 h-5 text-gray-400"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Timeline -->
+                    <div class="space-y-4" id="itinerary-timeline">
+                        <div class="itinerary-card flex gap-4 p-4 rounded-2xl bg-white shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all">
+                            <div class="flex-shrink-0 w-14 text-center">
+                                <div class="text-xs font-bold text-gray-400 uppercase">Mar</div>
+                                <div class="text-2xl font-bold" style="color: var(--primary);">15</div>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <i data-lucide="plane" class="w-4 h-4 text-blue-500"></i>
+                                    <span class="font-semibold text-sm" style="color: var(--text);">Arrival in Tokyo</span>
+                                    <span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold">FLIGHT</span>
+                                </div>
+                                <p class="text-xs text-gray-500">Singapore (SIN) → Tokyo (NRT) • JL712</p>
+                                <div class="mt-2 flex items-center gap-2 text-xs text-gray-400">
+                                    <i data-lucide="clock" class="w-3 h-3"></i>
+                                    <span>3:20 PM arrival</span>
+                                </div>
+                            </div>
+                            <div class="flex-shrink-0 self-center">
+                                <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="itinerary-card flex gap-4 p-4 rounded-2xl bg-white shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all">
+                            <div class="flex-shrink-0 w-14 text-center">
+                                <div class="text-xs font-bold text-gray-400 uppercase">Mar</div>
+                                <div class="text-2xl font-bold" style="color: var(--primary);">15</div>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <i data-lucide="hotel" class="w-4 h-4 text-purple-500"></i>
+                                    <span class="font-semibold text-sm" style="color: var(--text);">Check-in: Park Hyatt Tokyo</span>
+                                    <span class="px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[10px] font-bold">STAY</span>
+                                </div>
+                                <p class="text-xs text-gray-500">Shinjuku • Deluxe Twin Room</p>
+                                <div class="mt-2 flex gap-2">
+                                    <span class="px-2 py-1 rounded bg-gray-100 text-[10px] text-gray-600">Late check-in arranged</span>
+                                </div>
+                            </div>
+                            <div class="flex-shrink-0 self-center">
+                                <div class="w-2 h-2 rounded-full bg-gray-300"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="itinerary-card flex gap-4 p-4 rounded-2xl bg-white shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all">
+                            <div class="flex-shrink-0 w-14 text-center">
+                                <div class="text-xs font-bold text-gray-400 uppercase">Mar</div>
+                                <div class="text-2xl font-bold" style="color: var(--primary);">16</div>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <i data-lucide="camera" class="w-4 h-4 text-orange-500"></i>
+                                    <span class="font-semibold text-sm" style="color: var(--text);">Tsukiji Market Food Tour</span>
+                                    <span class="px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 text-[10px] font-bold">EXPERIENCE</span>
+                                </div>
+                                <p class="text-xs text-gray-500">Guided tour • 6 spots • Sushi breakfast included</p>
+                                <div class="mt-2 flex items-center gap-2">
+                                    <div class="flex -space-x-2">
+                                        <div class="w-6 h-6 rounded-full bg-gray-200 border-2 border-white"></div>
+                                        <div class="w-6 h-6 rounded-full bg-gray-300 border-2 border-white"></div>
+                                    </div>
+                                    <span class="text-[10px] text-gray-500">+3 friends joining</span>
+                                </div>
+                            </div>
+                            <div class="flex-shrink-0 self-center">
+                                <div class="w-2 h-2 rounded-full bg-gray-300"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="itinerary-card flex gap-4 p-4 rounded-2xl bg-gray-50 border border-dashed border-gray-300 cursor-pointer hover:bg-white hover:shadow-md transition-all group">
+                            <div class="flex-shrink-0 w-14 flex items-center justify-center">
+                                <div class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <i data-lucide="plus" class="w-4 h-4" style="color: var(--primary);"></i>
+                                </div>
+                            </div>
+                            <div class="flex-1 flex items-center">
+                                <span class="text-sm font-medium text-gray-400 group-hover:text-gray-600 transition-colors">Add activity or let Roami suggest...</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- AI Suggestions -->
+                    <div class="mt-6 p-4 rounded-2xl bg-gradient-to-r from-[var(--accent)]/10 to-transparent border border-[var(--accent)]/20">
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-full roami-gradient flex items-center justify-center text-white flex-shrink-0">
+                                <i data-lucide="lightbulb" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium mb-1" style="color: var(--text);">Roami noticed you have a 4-hour gap on Mar 17</p>
+                                <p class="text-xs text-gray-600 mb-2">Based on your location, I recommend visiting the TeamLab Borderless exhibition (15 min away)</p>
+                                <button class="text-xs font-semibold roami-text hover:underline" style="color: var(--primary);">
+                                    Add to itinerary →
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Side Panel: AI Insights -->
+                <div class="space-y-6">
+                    <div class="glass-panel rounded-3xl p-6 shadow-lg">
+                        <h4 class="font-display font-bold text-lg mb-4 flex items-center gap-2" style="color: var(--text);">
+                            <i data-lucide="brain" class="w-5 h-5" style="color: var(--primary);"></i>
+                            AI Insights
+                        </h4>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="sun" class="w-4 h-4 text-yellow-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium" style="color: var(--text);">Weather Alert</p>
+                                    <p class="text-xs text-gray-500">Rain expected Mar 18. I've indoor alternatives ready.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="trending-down" class="w-4 h-4 text-green-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium" style="color: var(--text);">Price Drop Alert</p>
+                                    <p class="text-xs text-gray-500">Your hotel is now $45 cheaper. Claim refund?</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="users" class="w-4 h-4 text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium" style="color: var(--text);">Friend Nearby</p>
+                                    <p class="text-xs text-gray-500">Sarah is also in Tokyo Mar 16-18. Schedule meetup?</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-panel rounded-3xl p-6 shadow-lg">
+                        <h4 class="font-display font-bold text-lg mb-4 flex items-center gap-2" style="color: var(--text);">
+                            <i data-lucide="wallet" class="w-5 h-5" style="color: var(--primary);"></i>
+                            Budget Tracker
+                        </h4>
+                        
+                        <div class="space-y-3">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Flights</span>
+                                <span class="font-semibold" style="color: var(--text);">$850</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Accommodation</span>
+                                <span class="font-semibold" style="color: var(--text);">$1,200</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Activities</span>
+                                <span class="font-semibold" style="color: var(--text);">$340</span>
+                            </div>
+                            <div class="pt-3 border-t border-gray-200">
+                                <div class="flex justify-between text-sm font-bold">
+                                    <span style="color: var(--text);">Total</span>
+                                    <span style="color: var(--primary);">$2,390</span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1">Under budget by $610 🎉</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Grid -->
+    <section class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="font-display text-4xl font-bold mb-4" style="color: var(--text);">
+                    Everything you need to travel smarter
+                </h2>
+                <p class="text-gray-600">Roami handles the complexity so you can enjoy the journey</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8" id="features-grid">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials / Social Proof -->
+    <section class="py-24 relative overflow-hidden" style="background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);">
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.4\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]"></div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div class="text-white">
+                    <h2 class="font-display text-4xl md:text-5xl font-bold mb-6">
+                        Trusted by 50,000+ travelers worldwide
+                    </h2>
+                    <p class="text-xl text-white/80 mb-8">
+                        From solo backpackers to Fortune 500 executives, Roami adapts to every travel style.
+                    </p>
+                    
+                    <div class="flex flex-wrap gap-8">
+                        <div>
+                            <div class="text-4xl font-bold font-display">4.9</div>
+                            <div class="flex items-center gap-1 text-yellow-300 my-1">
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                                <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                            </div>
+                            <div class="text-sm text-white/70">App Store Rating</div>
+                        </div>
+                        
+                        <div>
+                            <div class="text-4xl font-bold font-display">2M+</div>
+                            <div class="text-sm text-white/70 mt-1">Trips Planned</div>
+                        </div>
+                        
+                        <div>
+                            <div class="text-4xl font-bold font-display">40%</div>
+                            <div class="text-sm text-white/70 mt-1">Avg. Savings</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="glass-panel rounded-2xl p-6 transform hover:scale-105 transition-transform">
+                        <div class="flex items-start gap-4">
+                            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80" alt="User" class="w-12 h-12 rounded-full object-cover">
+                            <div>
+                                <p class="text-sm mb-2" style="color: var(--text);">"Roami saved my honeymoon! When our flight got cancelled, the AI instantly rebooked us and upgraded our hotel. Didn't lift a finger."</p>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-semibold text-sm" style="color: var(--text);">Sarah Chen</span>
+                                    <span class="text-xs text-gray-500">• Leisure Traveler</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-panel rounded-2xl p-6 transform hover:scale-105 transition-transform ml-8">
+                        <div class="flex items-start gap-4">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80" alt="User" class="w-12 h-12 rounded-full object-cover">
+                            <div>
+                                <p class="text-sm mb-2" style="color: var(--text);">"I book 200+ nights a year. Roami's business mode cut my planning time by 70%. The AI knows my preferences better than my assistant."</p>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-semibold text-sm" style="color: var(--text);">Marcus Johnson</span>
+                                    <span class="text-xs text-gray-500">• Executive</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-24 bg-white">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100 text-sm font-semibold mb-6" style="color: var(--primary);">
+                <i data-lucide="rocket" class="w-4 h-4"></i>
+                Launching Roami Pro soon
+            </div>
+            
+            <h2 class="font-display text-5xl font-bold mb-6" style="color: var(--text);">
+                Start your journey with Roami today
+            </h2>
+            <p class="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
+                Join thousands of travelers who never travel alone. Roami is free forever for basic planning.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button class="px-8 py-4 rounded-full roami-gradient text-white font-bold text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="message-circle" class="w-5 h-5"></i>
+                    Chat with Roami
+                </button>
+                <button class="px-8 py-4 rounded-full bg-white border-2 font-bold text-lg hover:bg-gray-50 transition-all flex items-center justify-center gap-2" style="border-color: var(--primary); color: var(--primary);">
+                    <i data-lucide="download" class="w-5 h-5"></i>
+                    Download App
+                </button>
+            </div>
+            
+            <p class="mt-8 text-sm text-gray-400">Available on iOS, Android, and Web</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 border-t" style="background-color: var(--bg); border-color: 'rgba(0,0,0,0.1)';">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="w-8 h-8 rounded-lg roami-gradient flex items-center justify-center text-white">
+                            <i data-lucide="compass" class="w-4 h-4"></i>
+                        </div>
+                        <span class="font-display font-bold text-lg" style="color: var(--text);">Roami</span>
+                    </div>
+                    <p class="text-sm text-gray-500">Your AI travel companion. Plan less, travel more.</p>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-sm mb-3" style="color: var(--text);">Product</h4>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li><a href="#" class="hover:text-[var(--primary)] transition-colors">Features</a></li>
+                        <li><a href="#" class="hover:text-[var(--primary)] transition-colors">Pricing</a></li>
+                        <li><a href="#" class="hover:text-[var(--primary)] transition-colors">API</a></li>
+                        <li><a href="#" class="hover:text-[var(--primary)] transition-colors">Integrations</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-sm mb-3" style="color: var(--text);">Company</h4>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li><a href="#" class="hover:text-[var(--primary)] transition-colors">About</a></li>
+                        <li><a href="#" class="hover:text-[var(--primary)] transition-colors">Blog</a></li>
+                        <li><a href="#" class="hover:text-[var(--primary)] transition-colors">Careers</a></li>
+                        <li><a href="#" class="hover:text-[var(--primary)] transition-colors">Press</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-sm mb-3" style="color: var(--text);">Support</h4>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li><a href="#" class="hover:text-[var(--primary)] transition-colors">Help Center</a></li>
+                        <li><a href="#" class="hover:text-[var(--primary)] transition-colors">Contact</a></li>
+                        <li><a href="#" class="hover:text-[var(--primary)] transition-colors">Privacy</a></li>
+                        <li><a href="#" class="hover:text-[var(--primary)] transition-colors">Terms</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="pt-8 border-t flex flex-col md:flex-row justify-between items-center gap-4" style="border-color: 'rgba(0,0,0,0.1)';">
+                <p class="text-sm text-gray-400">© 2024 Roami AI. All rights reserved.</p>
+                <div class="flex gap-4">
+                    <a href="#" class="text-gray-400 hover:text-[var(--primary)] transition-colors">
+                        <i data-lucide="twitter" class="w-5 h-5"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-[var(--primary)] transition-colors">
+                        <i data-lucide="instagram" class="w-5 h-5"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-[var(--primary)] transition-colors">
+                        <i data-lucide="linkedin" class="w-5 h-5"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+        
+        let currentMode = 'leisure';
+        
+        const featuresData = {
+            leisure: [
+                {
+                    icon: 'map',
+                    title: 'Smart Discovery',
+                    description: 'Roami learns your preferences and suggests hidden gems, local favorites, and off-the-beaten-path experiences.'
+                },
+                {
+                    icon: 'calendar',
+                    title: 'Auto-Itinerary',
+                    description: 'Drop your confirmation emails and Roami builds your complete itinerary, complete with maps, times, and directions.'
+                },
+                {
+                    icon: 'shield',
+                    title: 'Travel Protection',
+                    description: 'AI monitors your bookings for price drops, cancellations, and changes. Automatically rebooks when issues arise.'
+                },
+                {
+                    icon: 'users',
+                    title: 'Group Planning',
+                    description: 'Plan trips with friends collaboratively. Vote on activities, split expenses, and share itineraries in real-time.'
+                },
+                {
+                    icon: 'camera',
+                    title: 'Memory Capture',
+                    description: 'Automatically organizes your photos by location, suggests captions, and creates shareable trip albums.'
+                },
+                {
+                    icon: 'globe',
+                    title: 'Local Insights',
+                    description: 'Get real-time local tips—best times to visit, cultural etiquette, and safety alerts for your destination.'
+                }
+            ],
+            business: [
+                {
+                    icon: 'briefcase',
+                    title: 'Executive Scheduling',
+                    description: 'AI optimizes your business trip schedule, accounting for time zones, meeting buffers, and travel fatigue.'
+                },
+                {
+                    icon: 'building-2',
+                    title: 'Venue Finder',
+                    description: 'Find meeting rooms, coworking spaces, and business centers with the tech specs you need.'
+                },
+                {
+                    icon: 'receipt',
+                    title: 'Expense Automation',
+                    description: 'Auto-categorizes expenses, generates reports, and integrates with Concur, Expensify, and SAP.'
+                },
+                {
+                    icon: 'network',
+                    title: 'Networking Intel',
+                    description: 'Discovers industry events, professional meetups, and key contacts in your destination city.'
+                },
+                {
+                    icon: 'plane',
+                    title: 'Corporate Travel',
+                    description: 'Manages company travel policies, approval workflows, and preferred vendor rates automatically.'
+                },
+                {
+                    icon: 'clock',
+                    title: 'Jet Lag Coach',
+                    description: 'Personalized sleep and meal schedules to minimize jet lag based on your circadian rhythm.'
+                }
+            ]
+        };
+        
+        function setMode(mode) {
+            currentMode = mode;
+            const body = document.getElementById('app');
+            const slider = document.getElementById('mode-slider');
+            const leisureBtn = document.getElementById('mode-leisure');
+            const businessBtn = document.getElementById('mode-business');
+            
+            if (mode === 'business') {
+                body.classList.add('business-mode');
+                slider.style.transform = 'translateX(100%)';
+                leisureBtn.classList.remove('active');
+                businessBtn.classList.add('active');
+            } else {
+                body.classList.remove('business-mode');
+                slider.style.transform = 'translateX(0)';
+                leisureBtn.classList.add('active');
+                businessBtn.classList.remove('active');
+            }
+            
+            // Update features
+            renderFeatures();
+            
+            // Update chat suggestions
+            updateChatSuggestions(mode);
+            
+            // Show notification
+            showNotification(`Switched to ${mode} mode`);
+        }
+        
+        function renderFeatures() {
+            const grid = document.getElementById('features-grid');
+            const features = featuresData[currentMode];
+            
+            grid.innerHTML = features.map((feature, index) => `
+                <div class="feature-card group p-6 rounded-2xl bg-gray-50 hover:bg-white hover:shadow-xl transition-all duration-300 border border-transparent hover:border-gray-100">
+                    <div class="feature-icon w-12 h-12 rounded-xl roami-gradient flex items-center justify-center text-white mb-4 shadow-lg">
+                        <i data-lucide="${feature.icon}" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="font-display font-bold text-lg mb-2" style="color: var(--text);">${feature.title}</h3>
+                    <p class="text-sm text-gray-600 leading-relaxed">${feature.description}</p>
+                </div>
+            `).join('');
+            
+            lucide.createIcons();
+        }
+        
+        function updateChatSuggestions(mode) {
+            const container = document.querySelector('.chat-bubble.ai:last-child');
+            const suggestions = mode === 'business' 
+                ? [
+                    { text: 'Book executive lounge access', icon: 'coffee' },
+                    { text: 'Find meeting rooms near me', icon: 'map-pin' },
+                    { text: 'Optimize my NYC itinerary', icon: 'calendar' }
+                  ]
+                : [
+                    { text: 'Plan a weekend getaway', icon: 'palmtree' },
+                    { text: 'Find hidden beaches', icon: 'umbrella' },
+                    { text: 'Suggest local food tours', icon: 'utensils' }
+                  ];
+            
+            const buttons = suggestions.map(s => `
+                <button onclick="sendQuickMessage('${s.text}')" class="suggestion-chip px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-xs font-medium transition-colors flex items-center gap-1" style="color: var(--text);">
+                    <i data-lucide="${s.icon}" class="w-3 h-3"></i>
+                    ${s.text}
+                </button>
+            `).join('');
+            
+            // Update the suggestion buttons in the last AI message
+            const suggestionContainer = container.querySelector('.flex.flex-wrap');
+            if (suggestionContainer) {
+                suggestionContainer.innerHTML = buttons;
+                lucide.createIcons();
+            }
+        }
+        
+        // Chat functionality
+        function handleChatKeypress(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+        
+        function sendQuickMessage(text) {
+            document.getElementById('chat-input').value = text;
+            sendMessage();
+        }
+        
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+            
+            const container = document.getElementById('chat-container');
+            
+            // Add user message
+            container.innerHTML += `
+                <div class="chat-bubble user">
+                    <p class="text-sm">${text}</p>
+                </div>
+            `;
+            
+            input.value = '';
+            container.scrollTop = container.scrollHeight;
+            
+            // Show typing indicator
+            setTimeout(() => {
+                const typingId = 'typing-' + Date.now();
+                container.innerHTML += `
+                    <div class="chat-bubble ai" id="${typingId}">
+                        <div class="typing-indicator">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                `;
+                container.scrollTop = container.scrollHeight;
+                
+                // Remove typing and add response
+                setTimeout(() => {
+                    document.getElementById(typingId).remove();
+                    
+                    const responses = currentMode === 'business' 
+                        ? [
+                            "I've found 5 executive meeting rooms within 10 minutes of your location. The closest has video conferencing and is available now. Shall I book it?",
+                            "Your flight to Singapore is on time. I've noticed a lounge upgrade available for $25—would you like me to add it?",
+                            "Based on your calendar, I suggest moving your 3 PM meeting to 2 PM to avoid rush hour. Shall I propose this change?"
+                          ]
+                        : [
+                            "I found a hidden waterfall hike 30 minutes from you! It's rated 4.9 stars and perfect for this weather. Want me to arrange transport?",
+                            "There's a local cooking class starting in 2 hours near your hotel. It includes market tour and 3 dishes. Interested?",
+                            "I noticed you love photography. Sunset at this viewpoint is in 1 hour—optimal lighting conditions confirmed!"
+                          ];
+                    
+                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                    
+                    container.innerHTML += `
+                        <div class="chat-bubble ai">
+                            <p class="text-sm leading-relaxed">${randomResponse}</p>
+                        </div>
+                    `;
+                    container.scrollTop = container.scrollHeight;
+                }, 1500);
+            }, 300);
+        }
+        
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-24 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-full roami-gradient text-white font-medium shadow-2xl z-50 animate-slide-up';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(-50%) translateY(-10px)';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+        
+        // Scroll effects
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('bg-white/80', 'backdrop-blur-lg', 'shadow-sm');
+            } else {
+                navbar.classList.remove('bg-white/80', 'backdrop-blur-lg', 'shadow-sm');
+            }
+        });
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderFeatures();
+        });
+    </script>
+</body>
+</html>
