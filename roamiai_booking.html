@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roami AI - Your Intelligent Travel Companion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        roami: {
+                            dark: '#1B4332',
+                            primary: '#2D5A4A',
+                            sage: '#A4B5A0',
+                            accent: '#4ECDC4',
+                            light: '#F7F8F0',
+                            cream: '#FEFDF5',
+                            business: {
+                                dark: '#0f172a',
+                                primary: '#1e3a8a',
+                                accent: '#3b82f6',
+                                light: '#f8fafc'
+                            }
+                        }
+                    },
+                    fontFamily: {
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+                        body: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --primary: #2D5A4A;
+            --accent: #4ECDC4;
+            --bg: #F7F8F0;
+            --text: #1B4332;
+            --gradient-start: #2D5A4A;
+            --gradient-end: #4ECDC4;
+        }
+        
+        .business-mode {
+            --primary: #1e3a8a;
+            --accent: #3b82f6;
+            --bg: #f8fafc;
+            --text: #0f172a;
+            --gradient-start: #1e3a8a;
+            --gradient-end: #3b82f6;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            transition: all 0.5s ease;
+        }
+        
+        .roami-gradient {
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+        }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .business-mode .glass-panel {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        
+        .chat-bubble {
+            position: relative;
+            max-width: 80%;
+            padding: 1rem 1.25rem;
+            border-radius: 1.5rem;
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        .chat-bubble.user {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            border-bottom-right-radius: 0.25rem;
+            margin-left: auto;
+        }
+        
+        .chat-bubble.ai {
+            background: white;
+            color: var(--text);
+            border-bottom-left-radius: 0.25rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .business-mode .chat-bubble.ai {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .mode-toggle {
+            position: relative;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 9999px;
+            padding: 0.25rem;
+            display: flex;
+            gap: 0.25rem;
+        }
+        
+        .mode-option {
+            position: relative;
+            z-index: 1;
+            padding: 0.5rem 1.25rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .mode-option.active {
+            color: white;
+        }
+        
+        .mode-option:not(.active) {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .mode-slider {
+            position: absolute;
+            top: 0.25rem;
+            left: 0.25rem;
+            height: calc(100% - 0.5rem);
+            border-radius: 9999px;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 0;
+        }
+        
+        .traveler-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            padding: 1rem;
+            z-index: 50;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+        
+        .traveler-dropdown.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .activity-card, .stay-card {
+            transition: all 0.3s ease;
+        }
+        
+        .activity-card:hover, .stay-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .section-hidden {
+            display: none;
+        }
+        
+        .section-visible {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="antialiased overflow-x-hidden" id="app">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 transition-all duration-300 bg-white/80 backdrop-blur-lg shadow-sm" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center gap-3 cursor-pointer" onclick="showSection('home')">
+                    <div class="w-10 h-10 rounded-xl roami-gradient flex items-center justify-center text-white shadow-lg">
+                        <i data-lucide="compass" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <span class="font-display font-bold text-2xl tracking-tight" style="color: var(--text);">Roami</span>
+                        <span class="text-xs font-medium ml-1 px-2 py-0.5 rounded-full bg-gray-100" style="color: var(--primary);">AI</span>
+                    </div>
+                </div>
+                
+                <div class="hidden md:flex items-center gap-8">
+                    <button onclick="showSection('explore')" class="text-sm font-medium hover:opacity-70 transition-opacity" style="color: var(--text);">Explore</button>
+                    <button onclick="showSection('activities')" class="text-sm font-medium hover:opacity-70 transition-opacity" style="color: var(--text);">Activities</button>
+                    <button onclick="showSection('stays')" class="text-sm font-medium hover:opacity-70 transition-opacity" style="color: var(--text);">Stays</button>
+                    <button onclick="toggleMode()" class="px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2" 
+                            style="background: var(--bg); color: var(--primary); border: 1px solid var(--primary);">
+                        <i data-lucide="briefcase" class="w-4 h-4" id="nav-mode-icon"></i>
+                        <span id="nav-mode-text">Business Mode</span>
+                    </button>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleChat()" class="p-2 rounded-full hover:bg-gray-100 transition-colors relative">
+                        <i data-lucide="message-circle" class="w-6 h-6" style="color: var(--text);"></i>
+                        <span class="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
+                    </button>
+                    <button class="px-5 py-2.5 rounded-full text-sm font-semibold roami-gradient text-white shadow-lg hover:shadow-xl transition-all hover:scale-105">
+                        Sign In
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HOME SECTION -->
+    <section id="home-section" class="section-visible min-h-screen pt-20">
+        <!-- Hero with Booking -->
+        <div class="relative min-h-[85vh] flex items-center justify-center overflow-hidden" style="background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);">
+            <div class="absolute inset-0 opacity-20">
+                <div class="absolute top-20 left-10 w-72 h-72 bg-white rounded-full blur-3xl animate-pulse"></div>
+                <div class="absolute bottom-20 right-10 w-96 h-96 bg-white rounded-full blur-3xl animate-pulse" style="animation-delay: 2s;"></div>
+            </div>
+            
+            <div class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+                <div class="text-center mb-12">
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-6">
+                        <span class="flex h-2 w-2 rounded-full bg-white animate-pulse"></span>
+                        <span class="text-sm font-medium text-white">AI-Powered Travel Planning</span>
+                    </div>
+                    
+                    <h1 class="font-display text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
+                        Where to next?
+                    </h1>
+                    
+                    <p class="text-xl text-white/80 max-w-2xl mx-auto mb-8">
+                        Tell Roami where you want to go, and AI handles the rest—flights, stays, activities, all in one place.
+                    </p>
+                    
+                    <!-- Mode Toggle -->
+                    <div class="inline-block mb-8">
+                        <div class="mode-toggle" id="mode-toggle">
+                            <div class="mode-slider" id="mode-slider" style="width: 50%;"></div>
+                            <div class="mode-option active" id="mode-leisure" onclick="setMode('leisure')">
+                                <i data-lucide="palmtree" class="w-4 h-4"></i>
+                                Leisure
+                            </div>
+                            <div class="mode-option" id="mode-business" onclick="setMode('business')">
+                                <i data-lucide="briefcase" class="w-4 h-4"></i>
+                                Business
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Booking Bar -->
+                <div class="glass-panel rounded-3xl p-4 shadow-2xl max-w-5xl mx-auto">
+                    <div class="grid md:grid-cols-5 gap-4">
+                        <!-- Location -->
+                        <div class="md:col-span-2 relative">
+                            <label class="block text-xs font-semibold mb-1 ml-1 opacity-70 text-gray-600">Where to?</label>
+                            <div class="flex items-center gap-3 px-4 py-3 bg-white rounded-2xl border border-gray-200 focus-within:border-[var(--accent)] transition-colors">
+                                <i data-lucide="map-pin" class="w-5 h-5" style="color: var(--primary);"></i>
+                                <input type="text" id="booking-destination" placeholder="Try 'Tokyo' or 'Bali'" 
+                                       class="w-full bg-transparent outline-none text-sm font-medium"
+                                       style="color: var(--text);">
+                            </div>
+                        </div>
+                        
+                        <!-- Dates -->
+                        <div>
+                            <label class="block text-xs font-semibold mb-1 ml-1 opacity-70 text-gray-600">Check-in</label>
+                            <div class="flex items-center gap-3 px-4 py-3 bg-white rounded-2xl border border-gray-200">
+                                <i data-lucide="calendar" class="w-5 h-5" style="color: var(--primary);"></i>
+                                <input type="date" id="booking-checkin" 
+                                       class="w-full bg-transparent outline-none text-sm font-medium"
+                                       style="color: var(--text);">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs font-semibold mb-1 ml-1 opacity-70 text-gray-600">Check-out</label>
+                            <div class="flex items-center gap-3 px-4 py-3 bg-white rounded-2xl border border-gray-200">
+                                <i data-lucide="calendar" class="w-5 h-5" style="color: var(--primary);"></i>
+                                <input type="date" id="booking-checkout" 
+                                       class="w-full bg-transparent outline-none text-sm font-medium"
+                                       style="color: var(--text);">
+                            </div>
+                        </div>
+                        
+                        <!-- Travelers -->
+                        <div class="relative">
+                            <label class="block text-xs font-semibold mb-1 ml-1 opacity-70 text-gray-600">Travelers</label>
+                            <div class="flex items-center gap-3 px-4 py-3 bg-white rounded-2xl border border-gray-200 cursor-pointer" onclick="toggleTravelerDropdown()">
+                                <i data-lucide="users" class="w-5 h-5" style="color: var(--primary);"></i>
+                                <span id="traveler-display" class="text-sm font-medium" style="color: var(--text);">2 adults</span>
+                                <i data-lucide="chevron-down" class="w-4 h-4 ml-auto text-gray-400"></i>
+                            </div>
+                            
+                            <div id="traveler-dropdown" class="traveler-dropdown">
+                                <div class="space-y-4">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <div class="font-semibold text-sm">Adults</div>
+                                            <div class="text-xs text-gray-500">Ages 13+</div>
+                                        </div>
+                                        <div class="flex items-center gap-3">
+                                            <button class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50" onclick="updateTravelers('adults', -1)">
+                                                <i data-lucide="minus" class="w-4 h-4"></i>
+                                            </button>
+                                            <span id="adults-count" class="w-8 text-center font-semibold">2</span>
+                                            <button class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50" onclick="updateTravelers('adults', 1)">
+                                                <i data-lucide="plus" class="w-4 h-4"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <div class="font-semibold text-sm">Children</div>
+                                            <div class="text-xs text-gray-500">Ages 2-12</div>
+                                        </div>
+                                        <div class="flex items-center gap-3">
+                                            <button class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50" onclick="updateTravelers('children', -1)">
+                                                <i data-lucide="minus" class="w-4 h-4"></i>
+                                            </button>
+                                            <span id="children-count" class="w-8 text-center font-semibold">0</span>
+                                            <button class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50" onclick="updateTravelers('children', 1)">
+                                                <i data-lucide="plus" class="w-4 h-4"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <button onclick="toggleTravelerDropdown()" class="w-full py-2 rounded-xl roami-gradient text-white text-sm font-semibold">
+                                        Done
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 flex flex-wrap gap-3">
+                        <button onclick="searchStays()" class="flex-1 md:flex-none px-8 py-3 rounded-xl roami-gradient text-white font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2">
+                            <i data-lucide="search" class="w-5 h-5"></i>
+                            Search Stays
+                        </button>
+                        <button onclick="searchFlights()" class="px-6 py-3 rounded-xl bg-white border-2 font-semibold transition-all flex items-center gap-2 hover:bg-gray-50" style="border-color: var(--primary); color: var(--primary);">
+                            <i data-lucide="plane" class="w-5 h-5"></i>
+                            Flights
+                        </button>
+                        <button onclick="searchActivities()" class="px-6 py-3 rounded-xl bg-white border-2 font-semibold transition-all flex items-center gap-2 hover:bg-gray-50" style="border-color: var(--primary); color: var(--primary);">
+                            <i data-lucide="ticket" class="w-5 h-5"></i>
+                            Activities
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Quick Stats -->
+                <div class="mt-12 flex justify-center gap-8 md:gap-16 text-white">
+                    <div class="text-center">
+                        <div class="text-3xl font-bold font-display">2M+</div>
+                        <div class="text-sm opacity-80">Properties</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold font-display">500K+</div>
+                        <div class="text-sm opacity-80">Activities</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold font-display">4.9</div>
+                        <div class="text-sm opacity-80">App Rating</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Trending Destinations -->
+        <div class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h2 class="font-display text-3xl font-bold mb-1" style="color: var(--text);">Trending Now</h2>
+                    <p class="text-gray-600">Popular destinations this week</p>
+                </div>
+                <button onclick="showSection('explore')" class="flex items-center gap-2 text-sm font-semibold hover:opacity-70 transition-opacity" style="color: var(--primary);">
+                    View all
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6" id="trending-destinations">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+        
+        <!-- AI Assistant Preview -->
+        <div class="py-16 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid md:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100 text-sm font-semibold mb-4" style="color: var(--primary);">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i>
+                            AI Travel Assistant
+                        </span>
+                        <h2 class="font-display text-4xl font-bold mb-4" style="color: var(--text);">
+                            Plan your entire trip in one chat
+                        </h2>
+                        <p class="text-lg text-gray-600 mb-6">
+                            Tell Roami what you want—"beach vacation in Bali for 4 days under $2000"—and watch as AI finds flights, books hotels, and plans activities instantly.
+                        </p>
+                        <ul class="space-y-3">
+                            <li class="flex items-center gap-3">
+                                <div class="w-6 h-6 rounded-full roami-gradient flex items-center justify-center text-white">
+                                    <i data-lucide="check" class="w-4 h-4"></i>
+                                </div>
+                                <span class="text-gray-700">Natural language booking</span>
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <div class="w-6 h-6 rounded-full roami-gradient flex items-center justify-center text-white">
+                                    <i data-lucide="check" class="w-4 h-4"></i>
+                                </div>
+                                <span class="text-gray-700">Price drop alerts & rebooking</span>
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <div class="w-6 h-6 rounded-full roami-gradient flex items-center justify-center text-white">
+                                    <i data-lucide="check" class="w-4 h-4"></i>
+                                </div>
+                                <span class="text-gray-700">24/7 travel support</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="relative">
+                        <div class="glass-panel rounded-3xl p-6 shadow-2xl">
+                            <div class="flex items-center gap-3 mb-4 pb-4 border-b">
+                                <div class="w-10 h-10 rounded-full roami-gradient flex items-center justify-center text-white">
+                                    <i data-lucide="bot" class="w-5 h-5"></i>
+                                </div>
+                                <div>
+                                    <div class="font-semibold" style="color: var(--text);">Roami Assistant</div>
+                                    <div class="text-xs text-green-500 flex items-center gap-1">
+                                        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                                        Online
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="chat-bubble ai">
+                                    <p class="text-sm">Hi! I can help you book stays, find activities, or plan your entire trip. What would you like to do?</p>
+                                </div>
+                                <div class="flex gap-2 flex-wrap">
+                                    <button onclick="toggleChat()" class="px-3 py-1.5 bg-gray-100 rounded-full text-xs font-medium hover:bg-gray-200 transition-colors" style="color: var(--primary);">Find hotels</button>
+                                    <button onclick="toggleChat()" class="px-3 py-1.5 bg-gray-100 rounded-full text-xs font-medium hover:bg-gray-200 transition-colors" style="color: var(--primary);">Things to do</button>
+                                    <button onclick="toggleChat()" class="px-3 py-1.5 bg-gray-100 rounded-full text-xs font-medium hover:bg-gray-200 transition-colors" style="color: var(--primary);">Plan my trip</button>
+                                </div>
+                            </div>
+                            <button onclick="toggleChat()" class="w-full mt-4 py-3 rounded-xl roami-gradient text-white font-semibold">
+                                Start Chatting
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- EXPLORE/ACTIVITIES SECTION -->
+    <section id="explore-section" class="section-hidden min-h-screen pt-24 pb-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row gap-8">
+                <!-- Sidebar Filters -->
+                <div class="md:w-64 flex-shrink-0">
+                    <div class="glass-panel rounded-2xl p-6 sticky top-24">
+                        <h3 class="font-display font-bold text-lg mb-4 flex items-center gap-2" style="color: var(--text);">
+                            <i data-lucide="sliders-horizontal" class="w-5 h-5"></i>
+                            Filters
+                        </h3>
+                        
+                        <div class="space-y-6">
+                            <div>
+                                <label class="text-sm font-semibold mb-3 block" style="color: var(--text);">Category</label>
+                                <div class="space-y-2" id="category-filters">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="text-sm font-semibold mb-3 block" style="color: var(--text);">Price Range</label>
+                                <input type="range" min="0" max="500" value="500" class="w-full accent-[var(--primary)]" id="price-range" oninput="filterByPrice(this.value)">
+                                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                    <span>$0</span>
+                                    <span id="price-value">$500+</span>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="text-sm font-semibold mb-3 block" style="color: var(--text);">Duration</label>
+                                <div class="space-y-2">
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" class="rounded text-[var(--primary)]" checked>
+                                        <span class="text-sm text-gray-600">Under 3 hours</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" class="rounded text-[var(--primary)]" checked>
+                                        <span class="text-sm text-gray-600">Half day (3-6 hours)</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" class="rounded text-[var(--primary)]" checked>
+                                        <span class="text-sm text-gray-600">Full day</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Main Content -->
+                <div class="flex-1">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="font-display text-3xl font-bold" style="color: var(--text);">
+                                Things to do in <span id="explore-location">Singapore</span>
+                            </h2>
+                            <p class="text-gray-600 mt-1"><span id="activity-count">24</span> experiences found</p>
+                        </div>
+                        <select class="px-4 py-2 rounded-xl bg-white border border-gray-200 text-sm font-medium focus:outline-none focus:border-[var(--accent)]" style="color: var(--text);">
+                            <option>Recommended</option>
+                            <option>Price: Low to High</option>
+                            <option>Top Rated</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Activities Grid -->
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="activities-grid">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- STAYS SECTION -->
+    <section id="stays-section" class="section-hidden min-h-screen pt-24 pb-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h2 class="font-display text-3xl font-bold" style="color: var(--text);">
+                        Stays in <span id="stays-location">Tokyo</span>
+                    </h2>
+                    <p class="text-gray-600 mt-1">Mar 15-20 • 2 guests • <span id="stay-count">1,234</span> properties</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="showSection('home')" class="px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium hover:bg-gray-50">
+                        Modify Search
+                    </button>
+                    <select class="px-4 py-2 rounded-xl bg-white border border-gray-200 text-sm font-medium">
+                        <option>Recommended</option>
+                        <option>Price: Low to High</option>
+                        <option>Top Rated</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Stays Grid -->
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="stays-grid">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Floating Chat Widget -->
+    <div id="chat-widget" class="fixed bottom-6 right-6 w-96 bg-white rounded-3xl shadow-2xl z-50 transform translate-y-[120%] transition-transform duration-500 border overflow-hidden" style="border-color: rgba(0,0,0,0.1);">
+        <div class="roami-gradient p-4 text-white flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                    <i data-lucide="bot" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <div class="font-semibold">Roami Assistant</div>
+                    <div class="text-xs text-white/80">Always here to help</div>
+                </div>
+            </div>
+            <button onclick="toggleChat()" class="text-white/80 hover:text-white">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+        
+        <div class="h-80 overflow-y-auto p-4 bg-gray-50" id="chat-messages">
+            <div class="chat-bubble ai">
+                <p class="text-sm">Hi there! 👋 I can help you book stays, find activities, or plan your entire trip. What are you looking for?</p>
+            </div>
+            <div class="flex flex-wrap gap-2 mt-3">
+                <button onclick="sendQuickChat('Find me a hotel in Tokyo')" class="px-3 py-1.5 bg-white rounded-full text-xs font-medium shadow-sm hover:shadow transition-all" style="color: var(--primary);">
+                    🏨 Find hotel
+                </button>
+                <button onclick="sendQuickChat('Things to do near me')" class="px-3 py-1.5 bg-white rounded-full text-xs font-medium shadow-sm hover:shadow transition-all" style="color: var(--primary);">
+                    🎯 Activities
+                </button>
+                <button onclick="sendQuickChat('Cheapest flights to Bali')" class="px-3 py-1.5 bg-white rounded-full text-xs font-medium shadow-sm hover:shadow transition-all" style="color: var(--primary);">
+                    ✈️ Flights
+                </button>
+            </div>
+        </div>
+        
+        <div class="p-4 bg-white border-t">
+            <div class="flex gap-2">
+                <input type="text" id="chat-widget-input" placeholder="Ask anything..." 
+                       class="flex-1 px-4 py-2 rounded-xl bg-gray-100 text-sm outline-none focus:ring-2"
+                       style="color: var(--text); --tw-ring-color: var(--accent);"
+                       onkeypress="handleChatKeypress(event)">
+                <button onclick="sendChatMessage()" class="px-4 py-2 rounded-xl roami-gradient text-white">
+                    <i data-lucide="send" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat FAB -->
+    <button onclick="toggleChat()" id="chat-fab" class="fixed bottom-6 right-6 w-14 h-14 roami-gradient text-white rounded-full shadow-2xl flex items-center justify-center z-40 transition-all hover:scale-110">
+        <i data-lucide="message-circle" class="w-6 h-6"></i>
+    </button>
+
+    <script>
+        // Data
+        const destinations = {
+            leisure: [
+                { name: 'Bali, Indonesia', image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=400&q=80', stays: '12,400', price: '$45' },
+                { name: 'Tokyo, Japan', image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=400&q=80', stays: '8,200', price: '$89' },
+                { name: 'Santorini, Greece', image: 'https://images.unsplash.com/photo-1613395877344-13d4c280d288?w=400&q=80', stays: '1,800', price: '$156' },
+                { name: 'Tulum, Mexico', image: 'https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?w=400&q=80', stays: '3,400', price: '$67' }
+            ],
+            business: [
+                { name: 'Singapore CBD', image: 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=400&q=80', stays: '4,200', price: '$189' },
+                { name: 'London City', image: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&q=80', stays: '6,800', price: '$245' },
+                { name: 'New York Midtown', image: 'https://images.unsplash.com/photo-1496442226666-8d4ac70811cf?w=400&q=80', stays: '9,400', price: '$312' },
+                { name: 'Dubai DIFC', image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=400&q=80', stays: '3,200', price: '$278' }
+            ]
+        };
+        
+        const activities = {
+            leisure: [
+                { title: 'Hidden Waterfall Hike', location: 'Ubud, Bali', rating: 4.9, reviews: 128, price: 45, image: 'https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?w=400&q=80', tag: 'Adventure', duration: '6 hours', category: 'Adventure' },
+                { title: 'Sunset Wine Tasting', location: 'Santorini', rating: 4.8, reviews: 89, price: 65, image: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=400&q=80', tag: 'Culinary', duration: '3 hours', category: 'Culinary' },
+                { title: 'Old Town Walking Tour', location: 'Tokyo', rating: 4.7, reviews: 234, price: 25, image: 'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=400&q=80', tag: 'Culture', duration: '4 hours', category: 'Culture' },
+                { title: 'Kayaking Adventure', location: 'Phuket', rating: 4.9, reviews: 67, price: 55, image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&q=80', tag: 'Water Sports', duration: '5 hours', category: 'Adventure' },
+                { title: 'Cooking Class with Locals', location: 'Chiang Mai', rating: 4.8, reviews: 156, price: 35, image: 'https://images.unsplash.com/photo-1507048331197-7d4ac70811cf?w=400&q=80', tag: 'Culinary', duration: '4 hours', category: 'Culinary' },
+                { title: 'Sunrise Temple Visit', location: 'Kyoto', rating: 4.9, reviews: 312, price: 15, image: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=400&q=80', tag: 'Spiritual', duration: '3 hours', category: 'Culture' }
+            ],
+            business: [
+                { title: 'Executive Coworking Space', location: 'Singapore CBD', rating: 4.8, reviews: 156, price: 35, image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=80', tag: 'Workspace', duration: 'Day pass', category: 'Workspace' },
+                { title: 'Business Lunch Network', location: 'London City', rating: 4.6, reviews: 89, price: 45, image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&q=80', tag: 'Networking', duration: '2 hours', category: 'Networking' },
+                { title: 'Conference Room Premium', location: 'NYC Midtown', rating: 4.9, reviews: 45, price: 200, image: 'https://images.unsplash.com/photo-1517502884422-41eaead166d4?w=400&q-80', tag: 'Meeting', duration: '8 hours', category: 'Workspace' },
+                { title: 'Rooftop Networking Event', location: 'Singapore', rating: 4.7, reviews: 203, price: 0, image: 'https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=400&q=80', tag: 'Networking', duration: '3 hours', category: 'Networking' },
+                { title: 'Executive Golf Club', location: 'Dubai', rating: 4.8, reviews: 67, price: 150, image: 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?w=400&q=80', tag: 'Leisure', duration: '4 hours', category: 'Networking' },
+                { title: 'Business Lounge Access', location: 'Global', rating: 4.6, reviews: 892, price: 25, image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&q=80', tag: 'Travel', duration: 'Per visit', category: 'Workspace' }
+            ]
+        };
+        
+        const stays = {
+            leisure: [
+                { name: 'Ubud Tropical Villa', location: 'Ubud, Bali', rating: 4.9, reviews: 234, price: 89, image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=400&q=80', type: 'Entire villa', beds: 2, baths: 2 },
+                { name: 'Shinjuku Modern Apt', location: 'Tokyo, Japan', rating: 4.7, reviews: 189, price: 120, image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&q=80', type: 'Entire apartment', beds: 1, baths: 1 },
+                { name: 'Santorini Cave House', location: 'Oia, Greece', rating: 4.95, reviews: 412, price: 280, image: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=400&q=80', type: 'Entire home', beds: 2, baths: 1 },
+                { name: 'Tulum Beach Bungalow', location: 'Tulum, Mexico', rating: 4.6, reviews: 156, price: 75, image: 'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?w=400&q=80', type: 'Entire bungalow', beds: 1, baths: 1 },
+                { name: 'Kyoto Traditional Ryokan', location: 'Kyoto, Japan', rating: 4.8, reviews: 323, price: 195, image: 'https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=400&q=80', type: 'Private room', beds: 2, baths: 1 },
+                { name: 'Phuket Pool Villa', location: 'Phuket, Thailand', rating: 4.7, reviews: 267, price: 145, image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&q=80', type: 'Entire villa', beds: 3, baths: 2 }
+            ],
+            business: [
+                { name: 'Marina Bay Executive', location: 'Singapore CBD', rating: 4.8, reviews: 567, price: 320, image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&q=80', type: 'Hotel room', beds: 1, baths: 1, amenities: ['Gym', 'Pool', 'Business Center'] },
+                { name: 'City of London Hotel', location: 'London', rating: 4.6, reviews: 892, price: 285, image: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=400&q=80', type: 'Hotel room', beds: 1, baths: 1, amenities: ['Gym', 'Bar', 'Meeting Rooms'] },
+                { name: 'Midtown Business Suite', location: 'New York', rating: 4.7, reviews: 445, price: 450, image: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=400&q=80', type: 'Executive suite', beds: 1, baths: 1, amenities: ['Lounge', 'Gym', 'Concierge'] },
+                { name: 'Downtown Dubai Business', location: 'Dubai', rating: 4.9, reviews: 334, price: 380, image: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=400&q=80', type: 'Hotel room', beds: 1, baths: 1, amenities: ['Spa', 'Pool', 'Business Center'] },
+                { name: 'Shanghai Financial District', location: 'Shanghai', rating: 4.5, reviews: 223, price: 195, image: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=400&q=80', type: 'Hotel room', beds: 1, baths: 1, amenities: ['Gym', 'Lounge'] },
+                { name: 'Tokyo Business Hotel', location: 'Tokyo', rating: 4.7, reviews: 678, price: 165, image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=400&q=80', type: 'Hotel room', beds: 1, baths: 1, amenities: ['Gym', 'Restaurant'] }
+            ]
+        };
+        
+        let currentMode = 'leisure';
+        let travelers = { adults: 2, children: 0, infants: 0 };
+        let chatOpen = false;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            renderTrending();
+            renderCategories();
+            renderActivities();
+            renderStays();
+            
+            // Set today's date for checkin
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('booking-checkin').value = today;
+            const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+            document.getElementById('booking-checkout').value = tomorrow;
+        });
+        
+        function setMode(mode) {
+            currentMode = mode;
+            const body = document.getElementById('app');
+            const slider = document.getElementById('mode-slider');
+            const leisureBtn = document.getElementById('mode-leisure');
+            const businessBtn = document.getElementById('mode-business');
+            const navModeText = document.getElementById('nav-mode-text');
+            const navModeIcon = document.getElementById('nav-mode-icon');
+            
+            if (mode === 'business') {
+                body.classList.add('business-mode');
+                slider.style.transform = 'translateX(100%)';
+                leisureBtn.classList.remove('active');
+                businessBtn.classList.add('active');
+                navModeText.textContent = 'Leisure Mode';
+                navModeIcon.setAttribute('data-lucide', 'palmtree');
+            } else {
+                body.classList.remove('business-mode');
+                slider.style.transform = 'translateX(0)';
+                leisureBtn.classList.add('active');
+                businessBtn.classList.remove('active');
+                navModeText.textContent = 'Business Mode';
+                navModeIcon.setAttribute('data-lucide', 'briefcase');
+            }
+            
+            lucide.createIcons();
+            renderTrending();
+            renderCategories();
+            renderActivities();
+            renderStays();
+            showNotification(`Switched to ${mode} mode`);
+        }
+        
+        function toggleMode() {
+            setMode(currentMode === 'leisure' ? 'business' : 'leisure');
+        }
+        
+        function showSection(section) {
+            document.querySelectorAll('main > section').forEach(s => {
+                s.classList.remove('section-visible');
+                s.classList.add('section-hidden');
+            });
+            
+            document.getElementById(section + '-section').classList.remove('section-hidden');
+            document.getElementById(section + '-section').classList.add('section-visible');
+            
+            window.scrollTo(0, 0);
+            lucide.createIcons();
+        }
+        
+        function renderTrending() {
+            const container = document.getElementById('trending-destinations');
+            const data = destinations[currentMode];
+            
+            container.innerHTML = data.map(dest => `
+                <div class="group cursor-pointer" onclick="selectDestination('${dest.name}')">
+                    <div class="relative rounded-2xl overflow-hidden mb-3 aspect-[4/3]">
+                        <img src="${dest.image}" alt="${dest.name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    </div>
+                    <h3 class="font-semibold text-lg" style="color: var(--text);">${dest.name}</h3>
+                    <p class="text-sm text-gray-500">${dest.stays} stays • From ${dest.price}</p>
+                </div>
+            `).join('');
+        }
+        
+        function renderCategories() {
+            const container = document.getElementById('category-filters');
+            const cats = [...new Set(activities[currentMode].map(a => a.category))];
+            
+            container.innerHTML = cats.map((cat, i) => `
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" class="rounded text-[var(--primary)]" ${i < 3 ? 'checked' : ''}>
+                    <span class="text-sm text-gray-600">${cat}</span>
+                </label>
+            `).join('');
+        }
+        
+        function renderActivities() {
+            const container = document.getElementById('activities-grid');
+            const data = activities[currentMode];
+            
+            container.innerHTML = data.map(act => `
+                <div class="activity-card bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 cursor-pointer group">
+                    <div class="relative h-48 overflow-hidden">
+                        <img src="${act.image}" alt="${act.title}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        <div class="absolute top-3 left-3">
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-white/90" style="color: var(--primary);">${act.tag}</span>
+                        </div>
+                        <button class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors" onclick="event.stopPropagation(); this.classList.toggle('text-red-500')">
+                            <i data-lucide="heart" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex items-center gap-1 text-xs text-gray-500 mb-1">
+                            <i data-lucide="clock" class="w-3 h-3"></i>
+                            <span>${act.duration}</span>
+                        </div>
+                        <h3 class="font-semibold text-lg mb-1" style="color: var(--text);">${act.title}</h3>
+                        <p class="text-sm text-gray-500 mb-3">${act.location}</p>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-1">
+                                <i data-lucide="star" class="w-4 h-4 fill-yellow-400 text-yellow-400"></i>
+                                <span class="font-semibold text-sm">${act.rating}</span>
+                                <span class="text-gray-400 text-sm">(${act.reviews})</span>
+                            </div>
+                            <div class="font-bold" style="color: var(--primary);">
+                                ${act.price === 0 ? 'Free' : '$' + act.price}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('activity-count').textContent = data.length;
+            lucide.createIcons();
+        }
+        
+        function renderStays() {
+            const container = document.getElementById('stays-grid');
+            const data = stays[currentMode];
+            
+            container.innerHTML = data.map(stay => `
+                <div class="stay-card bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 cursor-pointer group">
+                    <div class="relative h-56 overflow-hidden">
+                        <img src="${stay.image}" alt="${stay.name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        <button class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors" onclick="event.stopPropagation(); this.classList.toggle('text-red-500')">
+                            <i data-lucide="heart" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-xs font-medium text-gray-500">${stay.type}</span>
+                        </div>
+                        <h3 class="font-semibold text-lg mb-1" style="color: var(--text);">${stay.name}</h3>
+                        <p class="text-sm text-gray-500 mb-3">${stay.location}</p>
+                        
+                        <div class="flex items-center gap-4 text-sm text-gray-500 mb-3">
+                            <span class="flex items-center gap-1">
+                                <i data-lucide="bed" class="w-4 h-4"></i>
+                                ${stay.beds} beds
+                            </span>
+                            <span class="flex items-center gap-1">
+                                <i data-lucide="bath" class="w-4 h-4"></i>
+                                ${stay.baths} baths
+                            </span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                            <div class="flex items-center gap-1">
+                                <i data-lucide="star" class="w-4 h-4 fill-yellow-400 text-yellow-400"></i>
+                                <span class="font-semibold">${stay.rating}</span>
+                                <span class="text-gray-400 text-sm">(${stay.reviews})</span>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold text-lg" style="color: var(--primary);">$${stay.price}</div>
+                                <div class="text-xs text-gray-500">per night</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('stay-count').textContent = data.length;
+            lucide.createIcons();
+        }
+        
+        function toggleTravelerDropdown() {
+            document.getElementById('traveler-dropdown').classList.toggle('active');
+        }
+        
+        function updateTravelers(type, change) {
+            travelers[type] = Math.max(0, travelers[type] + change);
+            document.getElementById(`${type}-count`).textContent = travelers[type];
+            
+            const total = travelers.adults + travelers.children + travelers.infants;
+            const parts = [];
+            if (travelers.adults) parts.push(`${travelers.adults} adult${travelers.adults > 1 ? 's' : ''}`);
+            if (travelers.children) parts.push(`${travelers.children} child${travelers.children > 1 ? 'ren' : ''}`);
+            if (travelers.infants) parts.push(`${travelers.infants} infant${travelers.infants > 1 ? 's' : ''}`);
+            
+            document.getElementById('traveler-display').textContent = parts.join(', ') || 'Add guests';
+        }
+        
+        function selectDestination(name) {
+            document.getElementById('booking-destination').value = name;
+            document.getElementById('explore-location').textContent = name;
+            document.getElementById('stays-location').textContent = name;
+            showNotification(`Selected ${name}`);
+        }
+        
+        function searchStays() {
+            const dest = document.getElementById('booking-destination').value;
+            if (dest) {
+                document.getElementById('stays-location').textContent = dest;
+                showSection('stays');
+            } else {
+                showNotification('Please enter a destination');
+            }
+        }
+        
+        function searchActivities() {
+            const dest = document.getElementById('booking-destination').value || 'Singapore';
+            document.getElementById('explore-location').textContent = dest;
+            showSection('explore');
+        }
+        
+        function searchFlights() {
+            showNotification('Flight search coming soon!');
+        }
+        
+        function filterByPrice(maxPrice) {
+            document.getElementById('price-value').textContent = '$' + maxPrice;
+            // Filter logic would go here
+        }
+        
+        // Chat functionality
+        function toggleChat() {
+            const widget = document.getElementById('chat-widget');
+            const fab = document.getElementById('chat-fab');
+            chatOpen = !chatOpen;
+            
+            if (chatOpen) {
+                widget.style.transform = 'translateY(0)';
+                fab.style.transform = 'scale(0)';
+            } else {
+                widget.style.transform = 'translateY(120%)';
+                fab.style.transform = 'scale(1)';
+            }
+        }
+        
+        function handleChatKeypress(e) {
+            if (e.key === 'Enter') sendChatMessage();
+        }
+        
+        function sendQuickChat(text) {
+            document.getElementById('chat-widget-input').value = text;
+            sendChatMessage();
+        }
+        
+        function sendChatMessage() {
+            const input = document.getElementById('chat-widget-input');
+            const text = input.value.trim();
+            if (!text) return;
+            
+            const container = document.getElementById('chat-messages');
+            
+            // User message
+            container.innerHTML += `
+                <div class="chat-bubble user mb-3">
+                    <p class="text-sm">${text}</p>
+                </div>
+            `;
+            
+            input.value = '';
+            container.scrollTop = container.scrollHeight;
+            
+            // AI typing
+            setTimeout(() => {
+                const typingId = 'typing-' + Date.now();
+                container.innerHTML += `
+                    <div class="chat-bubble ai mb-3" id="${typingId}">
+                        <div class="flex gap-1">
+                            <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
+                            <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.1s;"></span>
+                            <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s;"></span>
+                        </div>
+                    </div>
+                `;
+                container.scrollTop = container.scrollHeight;
+                
+                // Response
+                setTimeout(() => {
+                    document.getElementById(typingId).remove();
+                    
+                    const responses = currentMode === 'business' ? [
+                        `I found 5 ${currentMode} hotels near ${document.getElementById('booking-destination').value || 'Singapore'} CBD with meeting rooms. Shall I show you?`,
+                        "I can book you into an executive lounge at Changi. It includes shower, wifi, and refreshments. Interested?",
+                        "Your calendar shows a 3-hour gap tomorrow. I suggest visiting the National Gallery—it's 15 min from your hotel."
+                    ] : [
+                        `I found 3 hidden beaches near ${document.getElementById('booking-destination').value || 'Bali'} that aren't crowded. Want the locations?`,
+                        "There's a local cooking class starting in 2 hours near your area. Shall I book you in?",
+                        "Based on your preferences, I recommend the sunset hike—perfect weather conditions confirmed!"
+                    ];
+                    
+                    const response = responses[Math.floor(Math.random() * responses.length)];
+                    
+                    container.innerHTML += `
+                        <div class="chat-bubble ai mb-3">
+                            <p class="text-sm">${response}</p>
+                        </div>
+                    `;
+                    container.scrollTop = container.scrollHeight;
+                }, 1500);
+            }, 300);
+        }
+        
+        function showNotification(message) {
+            const notif = document.createElement('div');
+            notif.className = 'fixed top-24 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-full roami-gradient text-white font-medium shadow-2xl z-50 animate-pulse';
+            notif.textContent = message;
+            document.body.appendChild(notif);
+            
+            setTimeout(() => {
+                notif.remove();
+            }, 3000);
+        }
+        
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.relative')) {
+                document.getElementById('traveler-dropdown').classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
